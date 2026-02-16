@@ -1,0 +1,5 @@
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/tanha-font@v1.0.1/dist/font-face.css');
+
+* {
+  font-family: 'Tanha', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
