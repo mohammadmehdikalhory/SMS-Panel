@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { Plus } from 'lucide-react';
-import { Header } from '../components/Header';
 import { Sidebar } from '../components/Sidebar';
 import { QuickSendModal } from '../components/QuickSendModal';
 import { useTheme } from '../contexts/ThemeContext';
@@ -23,8 +22,6 @@ export function Dashboard() {
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`} dir="rtl">
-      <Header />
-      
       <div className="flex">
         <Sidebar />
         

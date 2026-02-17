@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router';
-import { LayoutDashboard, MessageSquare, BookUser, Wallet, FileText } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, BookUser, Wallet, FileText, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { UserSettingsModal } from './UserSettingsModal';
 
 export function Sidebar() {
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [userName] = useState('علی احمدی');
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'داشبورد', path: '/dashboard' },
@@ -14,30 +19,88 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className={`${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'} w-64 min-h-screen shadow-lg`}>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-blue-500 mb-8">پنل پیامکی</h1>
-        <nav className="space-y-2">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-blue-500 text-white'
-                    : theme === 'dark'
-                    ? 'hover:bg-gray-700'
-                    : 'hover:bg-gray-100'
-                }`
-              }
+    <>
+      <aside className={`${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'} w-64 min-h-screen shadow-lg`}>
+        <div className="p-6 flex flex-col min-h-screen">
+          <h1 className="text-2xl font-bold text-blue-500 mb-8">پنل پیامکی</h1>
+          <nav className="space-y-2">
+            {menuItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-blue-500 text-white'
+                      : theme === 'dark'
+                      ? 'hover:bg-gray-700'
+                      : 'hover:bg-gray-100'
+                  }`
+                }
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
+
+          <div className={`mt-auto pt-6 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+            <button
+              onClick={toggleTheme}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+              aria-label="تغییر تم"
             >
-              <item.icon className="w-5 h-5" />
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
-      </div>
-    </aside>
+              <span className="text-sm font-medium">
+                {theme === 'dark' ? 'حالت روز' : 'حالت شب'}
+              </span>
+              {theme === 'dark' ? (
+                <Sun className="w-5 h-5 text-yellow-400" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </button>
+
+            <div className="relative mt-3">
+              <button
+                onClick={() => setShowUserMenu((prev) => !prev)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+              >
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                  {userName.charAt(0)}
+                </div>
+                <div className="text-right flex-1">
+                  <div className="text-sm font-bold">{userName}</div>
+                </div>
+              </button>
+
+              {showUserMenu && (
+                <div className={`absolute bottom-full left-0 mb-2 w-full ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-lg shadow-xl border overflow-hidden z-50`}>
+                  <button
+                    onClick={() => {
+                      setShowSettings(true);
+                      setShowUserMenu(false);
+                    }}
+                    className={`w-full text-right px-4 py-3 text-sm ${theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}
+                  >
+                    تنظیمات کاربری
+                  </button>
+                  <button
+                    className={`w-full text-right px-4 py-3 text-sm text-red-500 ${theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}
+                  >
+                    خروج
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </aside>
+      {showSettings && (
+        <UserSettingsModal
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
+    </>
   );
 }
