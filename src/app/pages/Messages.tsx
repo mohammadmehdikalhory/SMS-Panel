@@ -35,6 +35,9 @@ export function Messages() {
     dateFrom: '',
     dateTo: ''
   });
+  const [inlineSender, setInlineSender] = useState('');
+  const [inlineRecipient, setInlineRecipient] = useState('');
+  const [inlineText, setInlineText] = useState('');
 
   const applyFilters = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -67,6 +70,15 @@ export function Messages() {
     return availableColumns.find(col => col.key === key)?.label || '';
   };
 
+  const handleInlineSend = () => {
+    if (!inlineSender || !inlineRecipient || !inlineText) {
+      return;
+    }
+    setInlineSender('');
+    setInlineRecipient('');
+    setInlineText('');
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -83,6 +95,67 @@ export function Messages() {
           <h1 className="text-3xl font-bold">پیامک ها</h1>
         </div>
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-white'} p-6 rounded-2xl shadow-lg mb-6`}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold">ارسال پیامک</h2>
+          <button
+            onClick={handleInlineSend}
+            className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors flex items-center gap-2"
+          >
+            <Send className="w-4 h-4" />
+            ارسال
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">شماره فرستنده</label>
+            <input
+              type="text"
+              value={inlineSender}
+              onChange={(e) => setInlineSender(e.target.value)}
+              placeholder="30001234567"
+              className={`w-full px-4 py-2 rounded-lg border ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-gray-50 border-gray-300'
+              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">شماره گیرنده</label>
+            <input
+              type="text"
+              value={inlineRecipient}
+              onChange={(e) => setInlineRecipient(e.target.value)}
+              placeholder="09123456789"
+              className={`w-full px-4 py-2 rounded-lg border ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-gray-50 border-gray-300'
+              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">متن پیام</label>
+          <textarea
+            value={inlineText}
+            onChange={(e) => setInlineText(e.target.value)}
+            placeholder="متن پیام را وارد کنید..."
+            rows={4}
+            className={`w-full px-4 py-2 rounded-lg border resize-none ${
+              theme === 'dark'
+                ? 'bg-gray-700 border-gray-600 text-white'
+                : 'bg-gray-50 border-gray-300'
+            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          />
+        </div>
+      </motion.div>
 
       {/* Statistics - Moved to top */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

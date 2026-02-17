@@ -1,4 +1,4 @@
-import { CreditCard, TrendingUp, TrendingDown, Plus, Download, ArrowLeft } from 'lucide-react';
+import { CreditCard, TrendingUp, TrendingDown, Plus, ArrowLeft } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { Link } from 'react-router';
 import { motion } from 'motion/react';
@@ -48,13 +48,17 @@ export function Wallet() {
         
         <div className="flex gap-4">
           <button className="flex-1 bg-white text-blue-600 px-4 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
-            <Plus className="w-5 h-5" />
-            شارژ کیف پول
+            <CreditCard className="w-5 h-5" />
+            شارژ از طریق درگاه
           </button>
-          <button className="bg-white/20 backdrop-blur-sm text-white px-4 py-3 rounded-lg font-medium hover:bg-white/30 transition-colors flex items-center justify-center gap-2">
+          <button className="flex-1 bg-white/20 backdrop-blur-sm text-white px-4 py-3 rounded-lg font-medium hover:bg-white/30 transition-colors flex items-center justify-center gap-2">
+            <Plus className="w-5 h-5" />
+            درخواست شارژ
+          </button>
+          {/* <button className="bg-white/20 backdrop-blur-sm text-white px-4 py-3 rounded-lg font-medium hover:bg-white/30 transition-colors flex items-center justify-center gap-2">
             <Download className="w-5 h-5" />
             دریافت گزارش
-          </button>
+          </button> */}
         </div>
       </div>
 
