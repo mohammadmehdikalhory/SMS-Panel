@@ -1,43 +1,121 @@
-import { useState } from 'react';
-import { Search, Filter, Send, Settings, X, ArrowLeft } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
-import { FilterModal, FilterOptions } from '../components/FilterModal';
-import { ColumnSelectorModal } from '../components/ColumnSelectorModal';
-import { Link } from 'react-router';
-import { motion } from 'motion/react';
+import { useState } from "react";
+import {
+  Search,
+  Filter,
+  Send,
+  Settings,
+  X,
+  ArrowLeft,
+  Users,
+  User,
+  BookUser,
+} from "lucide-react";
+import { useTheme } from "../contexts/ThemeContext";
+import { FilterModal, FilterOptions } from "../components/FilterModal";
+import { ColumnSelectorModal } from "../components/ColumnSelectorModal";
+import { Link } from "react-router";
+import { motion } from "motion/react";
 
 const mockMessages = [
-  { id: '1', recipient: '09123456789', sender: '30001234567', text: 'سلام، این یک پیام تستی است', date: '1405/11/26', time: '14:30', status: 'sent' },
-  { id: '2', recipient: '09121234567', sender: '30007654321', text: 'پیام دوم برای آزمایش', date: '1405/11/26', time: '13:15', status: 'sent' },
-  { id: '3', recipient: '09129876543', sender: '30001234567', text: 'پیام سوم', date: '1405/11/25', time: '10:20', status: 'failed' },
-  { id: '4', recipient: '09127654321', sender: '30009876543', text: 'پیام چهارم برای تست سیستم پیامکی', date: '1405/11/25', time: '09:45', status: 'sent' },
-  { id: '5', recipient: '09125556789', sender: '30001234567', text: 'پیام پنجم', date: '1405/11/24', time: '16:00', status: 'sent' },
+  {
+    id: "1",
+    recipient: "09123456789",
+    sender: "30001234567",
+    text: "سلام، این یک پیام تستی است",
+    date: "1405/11/26",
+    time: "14:30",
+    status: "sent",
+  },
+  {
+    id: "2",
+    recipient: "09121234567",
+    sender: "30007654321",
+    text: "پیام دوم برای آزمایش",
+    date: "1405/11/26",
+    time: "13:15",
+    status: "sent",
+  },
+  {
+    id: "3",
+    recipient: "09129876543",
+    sender: "30001234567",
+    text: "پیام سوم",
+    date: "1405/11/25",
+    time: "10:20",
+    status: "failed",
+  },
+  {
+    id: "4",
+    recipient: "09127654321",
+    sender: "30009876543",
+    text: "پیام چهارم برای تست سیستم پیامکی",
+    date: "1405/11/25",
+    time: "09:45",
+    status: "sent",
+  },
+  {
+    id: "5",
+    recipient: "09125556789",
+    sender: "30001234567",
+    text: "پیام پنجم",
+    date: "1405/11/24",
+    time: "16:00",
+    status: "sent",
+  },
 ];
 
 const availableColumns = [
-  { key: 'recipient', label: 'شماره گیرنده' },
-  { key: 'sender', label: 'شماره فرستنده' },
-  { key: 'text', label: 'متن پیام' },
-  { key: 'date', label: 'تاریخ' },
-  { key: 'time', label: 'ساعت' },
-  { key: 'status', label: 'وضعیت' },
+  { key: "recipient", label: "شماره گیرنده" },
+  { key: "sender", label: "شماره فرستنده" },
+  { key: "text", label: "متن پیام" },
+  { key: "date", label: "تاریخ" },
+  { key: "time", label: "ساعت" },
+  { key: "status", label: "وضعیت" },
+];
+
+const mockSenderNumbers = ["30001234567", "30007654321", "30009876543"];
+
+const mockContacts = [
+  { id: "c1", name: "مریم محمدی", number: "09121234567" },
+  { id: "c2", name: "فاطمه حسینی", number: "09129876543" },
+  { id: "c3", name: "علی احمدی", number: "09123456789" },
+];
+
+const mockGroups = [
+  { id: "g1", name: "دوستان" },
+  { id: "g2", name: "همکاران" },
+  { id: "g3", name: "خانواده" },
 ];
 
 export function Messages() {
   const { theme } = useTheme();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showColumnSelector, setShowColumnSelector] = useState(false);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>(['recipient', 'text', 'date', 'time', 'status']);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>([
+    "recipient",
+    "text",
+    "date",
+    "time",
+    "status",
+  ]);
   const [filters, setFilters] = useState<FilterOptions>({
     status: [],
     numbers: [],
-    dateFrom: '',
-    dateTo: ''
+    dateFrom: "",
+    dateTo: "",
   });
-  const [inlineSender, setInlineSender] = useState('');
-  const [inlineRecipient, setInlineRecipient] = useState('');
-  const [inlineText, setInlineText] = useState('');
+  const [inlineSender, setInlineSender] = useState("");
+  const [inlineRecipient, setInlineRecipient] = useState("");
+  const [inlineText, setInlineText] = useState("");
+  const [showSenderList, setShowSenderList] = useState(false);
+  const [showContactList, setShowContactList] = useState(false);
+  const [showGroupList, setShowGroupList] = useState(false);
+  const [selectedContacts, setSelectedContacts] = useState<typeof mockContacts>(
+    [],
+  );
+  const [selectedGroups, setSelectedGroups] = useState<typeof mockGroups>([]);
+  const [manualRecipients, setManualRecipients] = useState<string[]>([]);
 
   const applyFilters = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -47,8 +125,8 @@ export function Messages() {
     setFilters({
       status: [],
       numbers: [],
-      dateFrom: '',
-      dateTo: ''
+      dateFrom: "",
+      dateTo: "",
     });
   };
 
@@ -56,38 +134,86 @@ export function Messages() {
     setSelectedColumns(columns);
   };
 
-  const hasActiveFilters = filters.status.length > 0 || filters.numbers.length > 0 || filters.dateFrom || filters.dateTo;
+  const hasActiveFilters =
+    filters.status.length > 0 ||
+    filters.numbers.length > 0 ||
+    filters.dateFrom ||
+    filters.dateTo;
 
-  const filteredMessages = mockMessages.filter(msg => {
-    const matchesSearch = msg.recipient.includes(searchTerm) || msg.text.includes(searchTerm);
-    const matchesStatus = filters.status.length === 0 || filters.status.includes(msg.status);
-    const matchesNumber = filters.numbers.length === 0 || filters.numbers.includes(msg.sender);
-    
+  const filteredMessages = mockMessages.filter((msg) => {
+    const matchesSearch =
+      msg.recipient.includes(searchTerm) || msg.text.includes(searchTerm);
+    const matchesStatus =
+      filters.status.length === 0 || filters.status.includes(msg.status);
+    const matchesNumber =
+      filters.numbers.length === 0 || filters.numbers.includes(msg.sender);
+
     return matchesSearch && matchesStatus && matchesNumber;
   });
 
   const getColumnLabel = (key: string) => {
-    return availableColumns.find(col => col.key === key)?.label || '';
+    return availableColumns.find((col) => col.key === key)?.label || "";
   };
 
   const handleInlineSend = () => {
-    if (!inlineSender || !inlineRecipient || !inlineText) {
+    const recipientsCount =
+      manualRecipients.length + selectedContacts.length + selectedGroups.length;
+    if (!inlineSender || !inlineText || recipientsCount === 0) {
       return;
     }
-    setInlineSender('');
-    setInlineRecipient('');
-    setInlineText('');
+    setInlineSender("");
+    setInlineRecipient("");
+    setInlineText("");
+    setManualRecipients([]);
+    setSelectedContacts([]);
+    setSelectedGroups([]);
+  };
+
+  const closeInlineLists = () => {
+    setShowSenderList(false);
+    setShowContactList(false);
+    setShowGroupList(false);
+  };
+
+  const addManualRecipient = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    if (!manualRecipients.includes(trimmed)) {
+      setManualRecipients([...manualRecipients, trimmed]);
+    }
+  };
+
+  const removeManualRecipient = (value: string) => {
+    setManualRecipients(manualRecipients.filter((item) => item !== value));
+  };
+
+  const selectContact = (contact: (typeof mockContacts)[0]) => {
+    if (!selectedContacts.find((c) => c.id === contact.id)) {
+      setSelectedContacts([...selectedContacts, contact]);
+    }
+  };
+
+  const removeContact = (contactId: string) => {
+    setSelectedContacts(selectedContacts.filter((c) => c.id !== contactId));
+  };
+
+  const toggleGroup = (group: (typeof mockGroups)[0]) => {
+    if (selectedGroups.find((g) => g.id === group.id)) {
+      setSelectedGroups(selectedGroups.filter((g) => g.id !== group.id));
+    } else {
+      setSelectedGroups([...selectedGroups, group]);
+    }
   };
 
   return (
-    <div>
+    <div onClick={closeInlineLists}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Link to="/dashboard">
             <motion.button
               whileHover={{ scale: 1.1, x: 5 }}
               whileTap={{ scale: 0.9 }}
-              className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'} transition-all shadow-md`}
+              className={`p-2 rounded-xl ${theme === "dark" ? "bg-gray-800 hover:bg-gray-700" : "bg-white hover:bg-gray-100"} transition-all shadow-md`}
             >
               <ArrowLeft className="w-5 h-5" />
             </motion.button>
@@ -99,7 +225,7 @@ export function Messages() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-white'} p-6 rounded-2xl shadow-lg mb-6`}
+        className={`${theme === "dark" ? "bg-gradient-to-br from-gray-800 to-gray-900" : "bg-white"} p-6 rounded-2xl shadow-lg mb-6`}
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold">ارسال پیامک</h2>
@@ -113,32 +239,211 @@ export function Messages() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium mb-2">شماره فرستنده</label>
-            <input
-              type="text"
-              value={inlineSender}
-              onChange={(e) => setInlineSender(e.target.value)}
-              placeholder="30001234567"
-              className={`w-full px-4 py-2 rounded-lg border ${
-                theme === 'dark'
-                  ? 'bg-gray-700 border-gray-600 text-white'
-                  : 'bg-gray-50 border-gray-300'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-            />
+            <label className="block text-sm font-medium mb-2">سر شماره</label>
+            <div className="relative">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={inlineSender}
+                  placeholder="30001234567"
+                  readOnly
+                  className={`flex-1 px-4 py-2 rounded-lg border ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-white"
+                      : "bg-gray-50 border-gray-300"
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowSenderList(!showSenderList);
+                    setShowContactList(false);
+                    setShowGroupList(false);
+                  }}
+                  className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  aria-label="انتخاب سر شماره"
+                >
+                  <BookUser className="w-5 h-5" />
+                </button>
+              </div>
+              {showSenderList && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className={`absolute top-full left-0 right-0 mt-2 rounded-lg shadow-lg border ${theme === "dark" ? "bg-gray-700 border-gray-600" : "bg-white border-gray-200"} z-20`}
+                >
+                  {mockSenderNumbers.map((number) => (
+                    <div
+                      key={number}
+                      onClick={() => {
+                        setInlineSender(number);
+                        closeInlineLists();
+                      }}
+                      className={`px-4 py-3 cursor-pointer ${theme === "dark" ? "hover:bg-gray-600" : "hover:bg-gray-100"} first:rounded-t-lg last:rounded-b-lg`}
+                    >
+                      {number}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">شماره گیرنده</label>
-            <input
-              type="text"
-              value={inlineRecipient}
-              onChange={(e) => setInlineRecipient(e.target.value)}
-              placeholder="09123456789"
-              className={`w-full px-4 py-2 rounded-lg border ${
-                theme === 'dark'
-                  ? 'bg-gray-700 border-gray-600 text-white'
-                  : 'bg-gray-50 border-gray-300'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-            />
+            <label className="block text-sm font-medium mb-2">
+              گروه گیرنده / گیرنده
+            </label>
+            <div className="relative">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={inlineRecipient}
+                  onChange={(e) => setInlineRecipient(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addManualRecipient(inlineRecipient);
+                      setInlineRecipient("");
+                    }
+                  }}
+                  placeholder="شماره را وارد کنید و Enter بزنید"
+                  className={`flex-1 px-4 py-2 rounded-lg border ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-white"
+                      : "bg-gray-50 border-gray-300"
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowContactList(!showContactList);
+                    setShowSenderList(false);
+                    setShowGroupList(false);
+                  }}
+                  className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  aria-label="انتخاب مخاطب"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowGroupList(!showGroupList);
+                    setShowSenderList(false);
+                    setShowContactList(false);
+                  }}
+                  className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  aria-label="انتخاب گروه"
+                >
+                  <Users className="w-5 h-5" />
+                </button>
+              </div>
+              {(manualRecipients.length > 0 ||
+                selectedContacts.length > 0 ||
+                selectedGroups.length > 0) && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {manualRecipients.map((item) => (
+                    <div
+                      key={item}
+                      className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs ${
+                        theme === "dark"
+                          ? "bg-gray-700 text-white"
+                          : "bg-gray-200 text-gray-900"
+                      }`}
+                    >
+                      {item}
+                      <button
+                        onClick={() => removeManualRecipient(item)}
+                        className="text-red-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {selectedContacts.map((contact) => (
+                    <div
+                      key={contact.id}
+                      className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs ${
+                        theme === "dark"
+                          ? "bg-gray-700 text-white"
+                          : "bg-gray-200 text-gray-900"
+                      }`}
+                    >
+                      {contact.name}
+                      <button
+                        onClick={() => removeContact(contact.id)}
+                        className="text-red-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {selectedGroups.map((group) => (
+                    <div
+                      key={group.id}
+                      className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs ${
+                        theme === "dark"
+                          ? "bg-gray-700 text-white"
+                          : "bg-gray-200 text-gray-900"
+                      }`}
+                    >
+                      {group.name}
+                      <button
+                        onClick={() => toggleGroup(group)}
+                        className="text-red-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {showContactList && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className={`absolute top-full left-0 right-0 mt-2 rounded-lg shadow-lg border ${theme === "dark" ? "bg-gray-700 border-gray-600" : "bg-white border-gray-200"} z-20 max-h-60 overflow-y-auto`}
+                >
+                  {mockContacts.map((contact) => (
+                    <div
+                      key={contact.id}
+                      onClick={() => {
+                        selectContact(contact);
+                        closeInlineLists();
+                      }}
+                      className={`px-4 py-3 cursor-pointer ${theme === "dark" ? "hover:bg-gray-600" : "hover:bg-gray-100"} first:rounded-t-lg last:rounded-b-lg`}
+                    >
+                      <div className="font-medium">{contact.name}</div>
+                      <div className="text-sm opacity-70">{contact.number}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {showGroupList && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className={`absolute top-full left-0 right-0 mt-2 rounded-lg shadow-lg border ${theme === "dark" ? "bg-gray-700 border-gray-600" : "bg-white border-gray-200"} z-20`}
+                >
+                  {mockGroups.map((group) => (
+                    <button
+                      key={group.id}
+                      onClick={() => {
+                        toggleGroup(group);
+                        closeInlineLists();
+                      }}
+                      className={`w-full text-right px-4 py-3 ${
+                        theme === "dark"
+                          ? "hover:bg-gray-600"
+                          : "hover:bg-gray-100"
+                      } ${
+                        selectedGroups.find((g) => g.id === group.id)
+                          ? "font-bold text-blue-500"
+                          : ""
+                      }`}
+                    >
+                      {group.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div>
@@ -149,9 +454,9 @@ export function Messages() {
             placeholder="متن پیام را وارد کنید..."
             rows={4}
             className={`w-full px-4 py-2 rounded-lg border resize-none ${
-              theme === 'dark'
-                ? 'bg-gray-700 border-gray-600 text-white'
-                : 'bg-gray-50 border-gray-300'
+              theme === "dark"
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-gray-50 border-gray-300"
             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
         </div>
@@ -159,38 +464,40 @@ export function Messages() {
 
       {/* Statistics - Moved to top */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <motion.div 
+        <motion.div
           whileHover={{ y: -5 }}
-          className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-white to-gray-50'} p-6 rounded-2xl shadow-lg relative overflow-hidden`}
+          className={`${theme === "dark" ? "bg-gradient-to-br from-gray-800 to-gray-900" : "bg-gradient-to-br from-white to-gray-50"} p-6 rounded-2xl shadow-lg relative overflow-hidden`}
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl" />
           <div className="relative z-10">
-            <div className="text-3xl font-bold text-blue-500">{filteredMessages.length}</div>
+            <div className="text-3xl font-bold text-blue-500">
+              {filteredMessages.length}
+            </div>
             <div className="text-sm opacity-70 mt-1">کل پیامک ها</div>
           </div>
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           whileHover={{ y: -5 }}
-          className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-white to-gray-50'} p-6 rounded-2xl shadow-lg relative overflow-hidden`}
+          className={`${theme === "dark" ? "bg-gradient-to-br from-gray-800 to-gray-900" : "bg-gradient-to-br from-white to-gray-50"} p-6 rounded-2xl shadow-lg relative overflow-hidden`}
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/10 rounded-full blur-2xl" />
           <div className="relative z-10">
             <div className="text-3xl font-bold text-green-500">
-              {filteredMessages.filter(m => m.status === 'sent').length}
+              {filteredMessages.filter((m) => m.status === "sent").length}
             </div>
             <div className="text-sm opacity-70 mt-1">ارسال موفق</div>
           </div>
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           whileHover={{ y: -5 }}
-          className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-white to-gray-50'} p-6 rounded-2xl shadow-lg relative overflow-hidden`}
+          className={`${theme === "dark" ? "bg-gradient-to-br from-gray-800 to-gray-900" : "bg-gradient-to-br from-white to-gray-50"} p-6 rounded-2xl shadow-lg relative overflow-hidden`}
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded-full blur-2xl" />
           <div className="relative z-10">
             <div className="text-3xl font-bold text-red-500">
-              {filteredMessages.filter(m => m.status === 'failed').length}
+              {filteredMessages.filter((m) => m.status === "failed").length}
             </div>
             <div className="text-sm opacity-70 mt-1">ارسال ناموفق</div>
           </div>
@@ -207,21 +514,23 @@ export function Messages() {
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="جستجو در پیامک ها..."
             className={`w-full pr-10 pl-4 py-3 rounded-xl border ${
-              theme === 'dark' 
-                ? 'bg-gray-800 border-gray-700 text-white' 
-                : 'bg-white border-gray-300'
+              theme === "dark"
+                ? "bg-gray-800 border-gray-700 text-white"
+                : "bg-white border-gray-300"
             } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
           />
         </div>
-        
-        <motion.button 
+
+        <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowFilterModal(true)}
           className={`px-5 py-3 rounded-xl border ${
-            hasActiveFilters ? 'bg-blue-500 text-white border-blue-500' : theme === 'dark' 
-              ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' 
-              : 'bg-white border-gray-300 hover:bg-gray-50'
+            hasActiveFilters
+              ? "bg-blue-500 text-white border-blue-500"
+              : theme === "dark"
+                ? "bg-gray-800 border-gray-700 hover:bg-gray-700"
+                : "bg-white border-gray-300 hover:bg-gray-50"
           } transition-all flex items-center gap-2 shadow-md relative`}
         >
           <Filter className="w-5 h-5" />
@@ -246,15 +555,15 @@ export function Messages() {
             حذف فیلترها
           </motion.button>
         )}
-        
-        <motion.button 
+
+        <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowColumnSelector(true)}
           className={`px-5 py-3 rounded-xl border ${
-            theme === 'dark' 
-              ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' 
-              : 'bg-white border-gray-300 hover:bg-gray-50'
+            theme === "dark"
+              ? "bg-gray-800 border-gray-700 hover:bg-gray-700"
+              : "bg-white border-gray-300 hover:bg-gray-50"
           } transition-all flex items-center gap-2 shadow-md`}
         >
           <Settings className="w-5 h-5" />
@@ -263,17 +572,22 @@ export function Messages() {
       </div>
 
       {/* Messages List */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-white'} rounded-2xl shadow-lg overflow-hidden`}
+        className={`${theme === "dark" ? "bg-gradient-to-br from-gray-800 to-gray-900" : "bg-white"} rounded-2xl shadow-lg overflow-hidden`}
       >
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className={`${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'} backdrop-blur-sm`}>
+            <thead
+              className={`${theme === "dark" ? "bg-gray-700/50" : "bg-gray-50"} backdrop-blur-sm`}
+            >
               <tr>
-                {selectedColumns.map(colKey => (
-                  <th key={colKey} className="px-6 py-4 text-right text-sm font-semibold">
+                {selectedColumns.map((colKey) => (
+                  <th
+                    key={colKey}
+                    className="px-6 py-4 text-right text-sm font-semibold"
+                  >
                     {getColumnLabel(colKey)}
                   </th>
                 ))}
@@ -281,36 +595,42 @@ export function Messages() {
             </thead>
             <tbody className="divide-y dark:divide-gray-700">
               {filteredMessages.map((message, index) => (
-                <motion.tr 
+                <motion.tr
                   key={message.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
                 >
-                  {selectedColumns.includes('recipient') && (
+                  {selectedColumns.includes("recipient") && (
                     <td className="px-6 py-4 font-mono">{message.recipient}</td>
                   )}
-                  {selectedColumns.includes('sender') && (
-                    <td className="px-6 py-4 font-mono text-sm">{message.sender}</td>
+                  {selectedColumns.includes("sender") && (
+                    <td className="px-6 py-4 font-mono text-sm">
+                      {message.sender}
+                    </td>
                   )}
-                  {selectedColumns.includes('text') && (
-                    <td className="px-6 py-4 max-w-md truncate">{message.text}</td>
+                  {selectedColumns.includes("text") && (
+                    <td className="px-6 py-4 max-w-md truncate">
+                      {message.text}
+                    </td>
                   )}
-                  {selectedColumns.includes('date') && (
+                  {selectedColumns.includes("date") && (
                     <td className="px-6 py-4">{message.date}</td>
                   )}
-                  {selectedColumns.includes('time') && (
+                  {selectedColumns.includes("time") && (
                     <td className="px-6 py-4 font-mono">{message.time}</td>
                   )}
-                  {selectedColumns.includes('status') && (
+                  {selectedColumns.includes("status") && (
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        message.status === 'sent' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}>
-                        {message.status === 'sent' ? 'ارسال شده' : 'ناموفق'}
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          message.status === "sent"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                        }`}
+                      >
+                        {message.status === "sent" ? "ارسال شده" : "ناموفق"}
                       </span>
                     </td>
                   )}
@@ -328,12 +648,12 @@ export function Messages() {
         )}
       </motion.div>
 
-      <FilterModal 
-        isOpen={showFilterModal} 
-        onClose={() => setShowFilterModal(false)} 
+      <FilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
         onApply={applyFilters}
       />
-      
+
       <ColumnSelectorModal
         isOpen={showColumnSelector}
         onClose={() => setShowColumnSelector(false)}
