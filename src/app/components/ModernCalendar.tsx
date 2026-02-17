@@ -1,24 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import jalaali from 'jalaali-js';
 import { X, ChevronDown } from 'lucide-react';
-import { getPersianMonthName } from '../utils/jalali';
+import { getPersianMonthName, PersianDate } from '../utils/jalali';
 import { getHolidayInfo, isHolidayDate } from '../utils/persianHolidays';
 import { useTheme } from '../contexts/ThemeContext';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ModernCalendarProps {
-  onClose: () => void;
+  onClose?: () => void;
+  onSelectDate?: (date: PersianDate) => void;
+  selectedDate?: PersianDate | null;
+  embedded?: boolean;
 }
 
-export function ModernCalendar({ onClose }: ModernCalendarProps) {
+export function ModernCalendar({
+  onClose,
+  onSelectDate,
+  selectedDate,
+  embedded = false,
+}: ModernCalendarProps) {
   const { theme } = useTheme();
   const today = new Date();
   const todayJalali = jalaali.toJalaali(today);
   
-  const [currentMonth, setCurrentMonth] = useState(todayJalali.jm);
-  const [currentYear, setCurrentYear] = useState(todayJalali.jy);
+  const [currentMonth, setCurrentMonth] = useState(
+    selectedDate?.month ?? todayJalali.jm,
+  );
+  const [currentYear, setCurrentYear] = useState(
+    selectedDate?.year ?? todayJalali.jy,
+  );
   const [showYearSelector, setShowYearSelector] = useState(false);
   const [showMonthSelector, setShowMonthSelector] = useState(false);
+
+  useEffect(() => {
+    if (selectedDate) {
+      setCurrentYear(selectedDate.year);
+      setCurrentMonth(selectedDate.month);
+    }
+  }, [selectedDate]);
 
   const getDaysInMonth = (year: number, month: number): number => {
     if (month <= 6) return 31;
@@ -51,37 +70,29 @@ export function ModernCalendar({ onClose }: ModernCalendarProps) {
     return date.getDay() === 5 || isHolidayDate(currentYear, currentMonth, day);
   };
 
-  return (
+  const calendarCard = (
     <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center" 
-      onClick={onClose}
+      initial={embedded ? false : { opacity: 0, scale: 0.9, y: 20 }}
+      animate={embedded ? false : { opacity: 1, scale: 1, y: 0 }}
+      exit={embedded ? false : { opacity: 0, scale: 0.9, y: 20 }}
+      transition={{ type: "spring", damping: 20, stiffness: 300 }}
+      className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 text-white' : 'bg-gradient-to-br from-white to-gray-50 text-gray-900'} rounded-2xl shadow-2xl p-6 w-[450px] relative overflow-hidden`}
+      onClick={(e) => e.stopPropagation()}
     >
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        transition={{ type: "spring", damping: 20, stiffness: 300 }}
-        className={`${theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 text-white' : 'bg-gradient-to-br from-white to-gray-50 text-gray-900'} rounded-2xl shadow-2xl p-6 w-[450px] relative overflow-hidden`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Decorative Background */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -z-10" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl -z-10" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl -z-10" />
 
-        {/* Close Button */}
+      {onClose && !embedded && (
         <button 
           onClick={onClose}
           className="absolute top-4 left-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all hover:rotate-90 duration-300"
         >
           <X className="w-5 h-5" />
         </button>
+      )}
 
-        {/* Header - Year and Month Selectors */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          {/* Year Selector */}
+      <div className="flex items-center justify-center gap-3 mb-6">
+        <div className="relative">
           <div className="relative">
             <button
               onClick={() => {
@@ -165,8 +176,9 @@ export function ModernCalendar({ onClose }: ModernCalendarProps) {
             </AnimatePresence>
           </div>
         </div>
+      </div>
 
-        {/* Week Days */}
+      {/* Week Days */}
         <div className="grid grid-cols-7 gap-2 mb-3">
           {weekDays.map((day, index) => (
             <div 
@@ -189,12 +201,24 @@ export function ModernCalendar({ onClose }: ModernCalendarProps) {
             const { gy, gm, gd } = jalaali.toGregorian(currentYear, currentMonth, day);
             const date = new Date(gy, gm - 1, gd);
             const isFriday = date.getDay() === 5;
+            const isSelected =
+              selectedDate &&
+              selectedDate.year === currentYear &&
+              selectedDate.month === currentMonth &&
+              selectedDate.day === day;
             
             return (
               <motion.div
                 key={day}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() =>
+                  onSelectDate?.({
+                    year: currentYear,
+                    month: currentMonth,
+                    day,
+                  })
+                }
                 className={`
                   relative text-center p-2 rounded-xl cursor-pointer transition-all group
                   ${isToday(day) 
@@ -207,6 +231,7 @@ export function ModernCalendar({ onClose }: ModernCalendarProps) {
                         ? 'hover:bg-gray-700'
                         : 'hover:bg-gray-100'
                   }
+                  ${isSelected ? 'ring-2 ring-blue-400' : ''}
                 `}
               >
                 <div className="relative z-10">{day}</div>
@@ -239,7 +264,22 @@ export function ModernCalendar({ onClose }: ModernCalendarProps) {
             <span>تعطیل</span>
           </div>
         </div>
-      </motion.div>
+    </motion.div>
+  );
+
+  if (embedded) {
+    return calendarCard;
+  }
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center" 
+      onClick={onClose}
+    >
+      {calendarCard}
     </motion.div>
   );
 }

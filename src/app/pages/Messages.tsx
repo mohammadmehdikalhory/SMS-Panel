@@ -9,10 +9,13 @@ import {
   Users,
   User,
   BookUser,
+  CalendarClock,
+  Clock,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { FilterModal, FilterOptions } from "../components/FilterModal";
 import { ColumnSelectorModal } from "../components/ColumnSelectorModal";
+import { ModernCalendar } from "../components/ModernCalendar";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 
@@ -116,6 +119,13 @@ export function Messages() {
   );
   const [selectedGroups, setSelectedGroups] = useState<typeof mockGroups>([]);
   const [manualRecipients, setManualRecipients] = useState<string[]>([]);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState<{
+    year: number;
+    month: number;
+    day: number;
+  } | null>(null);
+  const [scheduleTime, setScheduleTime] = useState("");
 
   const applyFilters = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -167,12 +177,38 @@ export function Messages() {
     setManualRecipients([]);
     setSelectedContacts([]);
     setSelectedGroups([]);
+    setScheduleDate(null);
+    setScheduleTime("");
   };
 
   const closeInlineLists = () => {
     setShowSenderList(false);
     setShowContactList(false);
     setShowGroupList(false);
+  };
+
+  const applySchedule = () => {
+    if (!scheduleDate || !scheduleTime) return;
+    setShowScheduleModal(false);
+  };
+
+  const clearSchedule = () => {
+    setScheduleDate(null);
+    setScheduleTime("");
+    setShowScheduleModal(false);
+  };
+
+  const toPersianNumber = (value: string) => {
+    return value.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+  };
+
+  const formatScheduleDate = (date: {
+    year: number;
+    month: number;
+    day: number;
+  }) => {
+    const formatted = `${date.year}/${date.month.toString().padStart(2, "0")}/${date.day.toString().padStart(2, "0")}`;
+    return toPersianNumber(formatted);
   };
 
   const addManualRecipient = (value: string) => {
@@ -229,14 +265,55 @@ export function Messages() {
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold">ارسال پیامک</h2>
-          <button
-            onClick={handleInlineSend}
-            className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors flex items-center gap-2"
-          >
-            <Send className="w-4 h-4" />
-            ارسال
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowScheduleModal(true);
+              }}
+              className={`p-2 rounded-lg border ${
+                theme === "dark"
+                  ? "border-gray-700 bg-gray-800 hover:bg-gray-700"
+                  : "border-gray-200 bg-white hover:bg-gray-50"
+              } transition-colors`}
+              aria-label="زمان بندی پیام"
+            >
+              <CalendarClock className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleInlineSend}
+              className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors flex items-center gap-2"
+            >
+              <Send className="w-4 h-4" />
+              ارسال
+            </button>
+          </div>
         </div>
+        {scheduleDate && scheduleTime && (
+          <div
+            className={`mb-4 flex items-center justify-between gap-3 text-sm ${
+              theme === "dark" ? "text-gray-300" : "text-gray-600"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <CalendarClock className="w-4 h-4" />
+              <span>
+                ارسال زمان‌بندی‌شده: {formatScheduleDate(scheduleDate)}{" "}
+                {toPersianNumber(scheduleTime)}
+              </span>
+            </div>
+            <button
+              onClick={clearSchedule}
+              className={`px-3 py-1 rounded-lg text-xs border ${
+                theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800"
+                  : "border-gray-300 hover:bg-gray-100"
+              } transition-colors`}
+            >
+              حذف زمان‌بندی
+            </button>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium mb-2">سر شماره</label>
@@ -461,6 +538,107 @@ export function Messages() {
           />
         </div>
       </motion.div>
+      {showScheduleModal && (
+        <div
+          onClick={() => setShowScheduleModal(false)}
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full max-w-3xl rounded-2xl p-6 shadow-xl ${
+              theme === "dark" ? "bg-gray-900 text-white" : "bg-white"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">زمان‌بندی ارسال</h3>
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className={`p-2 rounded-lg ${
+                  theme === "dark"
+                    ? "bg-gray-800 hover:bg-gray-700"
+                    : "bg-gray-100 hover:bg-gray-200"
+                } transition-colors`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-4 mb-6 items-start">
+              <ModernCalendar
+                embedded
+                selectedDate={scheduleDate}
+                onSelectDate={setScheduleDate}
+              />
+              <div className="flex flex-col gap-4">
+                <div
+                  className={`text-sm ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-600"
+                  }`}
+                >
+                  {scheduleDate
+                    ? `تاریخ انتخاب‌شده: ${formatScheduleDate(scheduleDate)}`
+                    : "تاریخ انتخاب نشده"}
+                </div>
+                <div
+                  className={`rounded-xl border p-4 ${
+                    theme === "dark"
+                      ? "border-gray-800 bg-gray-900/60"
+                      : "border-gray-200 bg-gray-50"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-sm font-medium">ساعت</div>
+                    <div
+                      className={`text-xs ${
+                        theme === "dark" ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
+                      {scheduleTime
+                        ? `ساعت انتخاب‌شده: ${toPersianNumber(scheduleTime)}`
+                        : "ساعت انتخاب نشده"}
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <Clock
+                      className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+                        theme === "dark" ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    />
+                    <input
+                      type="time"
+                      lang="fa-IR"
+                      value={scheduleTime}
+                      onChange={(e) => setScheduleTime(e.target.value)}
+                      className={`w-full pl-9 pr-4 py-2 rounded-lg border ${
+                        theme === "dark"
+                          ? "bg-gray-800 border-gray-700 text-white"
+                          : "bg-white border-gray-300"
+                      } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={clearSchedule}
+                className={`px-4 py-2 rounded-lg border ${
+                  theme === "dark"
+                    ? "border-gray-700 hover:bg-gray-800"
+                    : "border-gray-300 hover:bg-gray-100"
+                } transition-colors`}
+              >
+                حذف زمان‌بندی
+              </button>
+              <button
+                onClick={applySchedule}
+                className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+              >
+                ثبت زمان‌بندی
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Statistics - Moved to top */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
